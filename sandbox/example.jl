@@ -16,7 +16,7 @@ Random.seed!(8744)
 ##############################################################################################################
 function sample_prior()
     μ = rand(Normal(0, 1))
-    σ = rand(Uniform(0, 10))
+    σ = rand(truncated(LogNormal(1, 1), 0, 10))
     return [μ,σ]
 end
 
@@ -28,24 +28,23 @@ n_train = 10000
 x_train = mapreduce(x -> sample_prior(), hcat, 1:n_train)
 y_train = mapreduce(i -> rand(Normal(x_train[:,i]...), n_obs), hcat, 1:n_train)
 x_train = reshape(x_train, (1,1,n_parms,:))
-y_train = reshape(y_train, (1,1,n_obs,:));
+y_train = reshape(y_train, (1,1,n_obs,:))
 ##############################################################################################################
 #                                           train neural network
 ##############################################################################################################
 n_epochs = 2
 batch_size = 200
 n_batches = div(n_train, batch_size)
-n_hidden = 32
+n_hidden = 64
 n_multiscale = 3
 n_coupling = 4
 network = NetworkConditionalGlow(n_parms, n_obs, n_hidden, n_multiscale, n_coupling)
-train!(network, x_train, y_train;
-     n_epochs, n_batches, batch_size, n_train)
+train!(network, x_train, y_train; n_epochs, n_batches, batch_size)
 ##############################################################################################################
 #                                sample from posterior distribution
 ##############################################################################################################
 # posterior inference on unseen observation
-x_ground_truth = [-1,2] # mu=-1, sigma=2
+x_ground_truth = [-1,1] # mu=-1, sigma=1
 n_samples = 1000
 data = reshape(rand(Normal(x_ground_truth[1], x_ground_truth[2]), n_obs), (1,1,n_obs,:))
 
