@@ -17,7 +17,8 @@ Random.seed!(8744)
 # posterior inference on unseen observation
 μ = -1
 σ = 1
-data = reshape(rand(Normal(μ, σ), n_obs), (1,1,n_obs,:))
+n_obs = 50
+data = rand(Normal(μ, σ), n_obs)
 ##############################################################################################################
 #                                           generate training data
 ##############################################################################################################
@@ -28,17 +29,15 @@ function sample_prior()
 end
 
 n_parms = 2 
-n_obs = 50
 n_train = 10000
 # train using samples from joint distribution x,y ~ p(x,y) where x=[μ, σ] -> y = N(μ, σ)
 # rows: μ, σ, y
 x_train = mapreduce(x -> sample_prior(), hcat, 1:n_train)
 y_train = mapreduce(i -> rand(Normal(x_train[:,i]...), n_obs), hcat, 1:n_train)
-x_train = reshape(x_train, (1,1,n_parms,:))
-y_train = reshape(y_train, (1,1,n_obs,:))
 ##############################################################################################################
 #                                          sample prior distribution
 ##############################################################################################################
+n_samples = 1000
 x_prior = mapreduce(x -> sample_prior(), hcat, 1:n_samples)'
 ##############################################################################################################
 #                                           train neural network
@@ -50,7 +49,7 @@ n_hidden = 32
 n_multiscale = 3
 n_coupling = 4
 network = NetworkConditionalGlow(n_parms, n_obs, n_hidden, n_multiscale, n_coupling)
-losses = train!(network, x_train, y_train; n_epochs, n_batches, batch_size)
+losses = train!(network, x_train, y_train; n_epochs, n_batches, batch_size, n_obs)
 fig = figure()
 plot(losses)
 xlabel("iterations")
@@ -59,7 +58,6 @@ fig
 ##############################################################################################################
 #                                sample from posterior distribution
 ##############################################################################################################
-n_samples = 1000
 x_post = sample_posterior(network, data; n_parms, n_samples)
 ##############################################################################################################
 #                                        plot results

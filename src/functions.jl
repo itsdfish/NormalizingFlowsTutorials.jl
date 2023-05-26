@@ -1,3 +1,10 @@
+function train!(network::NetworkConditionalGlow, 
+    x_train::AbstractArray{T,2}, y_train::AbstractArray{T,2}; n_obs, kwargs...) where {T}
+    x_train = reshape(x_train, (1,1,size(x_train, 1),:))
+    y_train = reshape(y_train, (1,1,n_obs,:))
+    return train!(network, x_train, y_train; kwargs...)
+end
+
 function train!(network::NetworkConditionalGlow, x_train, y_train; 
         n_batches = 200,
         batch_size = 1000,
@@ -47,10 +54,15 @@ function train!(network::NetworkConditionalGlow, x_train, y_train;
     return loss_l2 + logdet_train
 end
 
-function sample_posterior(G, data; n_parms, n_samples)
+function sample_posterior(network, data::AbstractArray{T,1}; kwargs...) where {T}
+    data = reshape(data, (1,1,length(data),:))
+    return sample_posterior(network, data; kwargs...)
+end
+
+function sample_posterior(network, data; n_parms, n_samples)
     ZX_noise = randn(1, 1, n_parms, n_samples) 
     Y_forward = repeat(data, 1, 1, 1, n_samples) 
-    _, Zy_fixed_train, _ = G.forward(ZX_noise, Y_forward) #needed to set the proper transforms on inverse
-    post_samples =  G.inverse(ZX_noise, Zy_fixed_train)
+    _, Zy_fixed_train, _ = network.forward(ZX_noise, Y_forward) #needed to set the proper transforms on inverse
+    post_samples =  network.inverse(ZX_noise, Zy_fixed_train)
     return reshape(post_samples, (n_parms,n_samples)) |> transpose
 end
