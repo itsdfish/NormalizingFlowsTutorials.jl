@@ -38,19 +38,19 @@ function train!(network::NetworkConditionalGlow, x_train, y_train;
                 (:batch, "$b/$n_batches"),
                 (:f_l2, round(loss_l2[iter],digits=3)),
                 (:lgdet, round(logdet_train[iter],digits=3)),
-                (:full_objective, round(loss_l2[iter] + logdet_train[iter],digits=3))]
+                (:loss, round(loss_l2[iter] + logdet_train[iter],digits=3))]
 
             show_progress ? next!(progress; showvalues) : nothing
             iter += 1
         end
     end
-    return network
+    return loss_l2 + logdet_train
 end
 
 function sample_posterior(G, data; n_parms, n_samples)
     ZX_noise = randn(1, 1, n_parms, n_samples) 
     Y_forward = repeat(data, 1, 1, 1, n_samples) 
-    _, Zy_fixed_train, _ = G.forward(ZX_noise, Y_forward); #needed to set the proper transforms on inverse
+    _, Zy_fixed_train, _ = G.forward(ZX_noise, Y_forward) #needed to set the proper transforms on inverse
     post_samples =  G.inverse(ZX_noise, Zy_fixed_train)
     return reshape(post_samples, (n_parms,n_samples)) |> transpose
 end
