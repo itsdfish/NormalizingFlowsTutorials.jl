@@ -19,6 +19,8 @@ Random.seed!(8744)
 μ = [-1,1]
 σ = 1
 n_obs = 50
+
+# what shape should this be?
 data = reshape(rand(MvNormal(μ, σ * I(2)), n_obs), (1,2,n_obs,1))
 ##############################################################################################################
 #                                           generate training data
@@ -35,11 +37,13 @@ n_train = 10000
 # train using samples from joint distribution x,y ~ p(x,y) where x=[μ, σ] -> y = N(μ, σ)
 # rows: μ, σ, y
 x_train = mapreduce(x -> sample_prior(), hcat, 1:n_train)
+# hack to make even number of parameters. 
 x_train = [x_train[1,:]'; x_train]
-y_train = map(i -> rand(MvNormal(x_train[1:2,i],x_train[3,i] * I(2)), n_obs), 1:n_train)
 
-# x_train = reshape(x_train, (1,1,n_parms,:))
-# y_train = reshape(y_train, (1,2,n_obs,:))
+
+# what shape should this be?
+# Dimensions: n_train, n_obs, MvNormal variables (2)
+y_train = map(i -> rand(MvNormal(x_train[1:2,i],x_train[3,i] * I(2)), n_obs), 1:n_train)
 ##############################################################################################################
 #                                          sample prior distribution
 ##############################################################################################################
@@ -71,13 +75,22 @@ fig = figure()
 subplot(1,2,1)
 hist(x_prior[:,1];alpha=0.7,density=true,label="Prior")
 hist(x_post[:,1];alpha=0.7,density=true,label="Posterior")
-axvline(μ, color="k", linewidth=1,label="Ground truth")
-xlabel(L"\mu"); ylabel("Density"); 
+axvline(μ[1], color="k", linewidth=1,label="Ground truth")
+xlabel(L"\mu_1"); ylabel("Density"); 
 legend()
 
-subplot(1,2,2)
-hist(x_prior[:,2]; alpha=0.7,density=true,label="Prior")
-hist(x_post[:,2]; alpha=0.7,density=true,label="Posterior")
+fig = figure()
+subplot(1,2,1)
+hist(x_prior[:,2];alpha=0.7,density=true,label="Prior")
+hist(x_post[:,2];alpha=0.7,density=true,label="Posterior")
+axvline(μ[2], color="k", linewidth=1,label="Ground truth")
+xlabel(L"\mu_2"); ylabel("Density"); 
+legend()
+
+
+subplot(1,2,3)
+hist(x_prior[:,3]; alpha=0.7,density=true,label="Prior")
+hist(x_post[:,3]; alpha=0.7,density=true,label="Posterior")
 axvline(σ, color="k", linewidth=1,label="Ground truth")
 xlabel(L"\sigma"); ylabel("Density");
 legend()

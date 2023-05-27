@@ -10,11 +10,10 @@ using InvertibleNetworks: NetworkConditionalGlow
 using Distributions
 using Random
 using PyPlot
-Random.seed!(8744)
+Random.seed!(90211)
 ##############################################################################################################
 #                                           generate data
 ##############################################################################################################
-# posterior inference on unseen observation
 μ = -1
 σ = 1
 n_obs = 50
@@ -30,8 +29,6 @@ end
 
 n_parms = 2 
 n_train = 10000
-# train using samples from joint distribution x,y ~ p(x,y) where x=[μ, σ] -> y = N(μ, σ)
-# rows: μ, σ, y
 x_train = mapreduce(x -> sample_prior(), hcat, 1:n_train)
 y_train = mapreduce(i -> rand(Normal(x_train[:,i]...), n_obs), hcat, 1:n_train)
 ##############################################################################################################
@@ -42,7 +39,7 @@ x_prior = mapreduce(x -> sample_prior(), hcat, 1:n_samples)'
 ##############################################################################################################
 #                                           train neural network
 ##############################################################################################################
-n_epochs = 10
+n_epochs = 20
 batch_size = 1000
 n_batches = div(n_train, batch_size)
 n_hidden = 32
@@ -50,6 +47,7 @@ n_multiscale = 3
 n_coupling = 4
 network = NetworkConditionalGlow(n_parms, n_obs, n_hidden, n_multiscale, n_coupling)
 losses = train!(network, x_train, y_train; n_epochs, n_batches, batch_size, n_obs)
+
 fig = figure()
 plot(losses)
 xlabel("iterations")

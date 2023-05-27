@@ -63,6 +63,6 @@ function sample_posterior(network, data; n_parms, n_samples)
     ZX_noise = randn(1, 1, n_parms, n_samples) 
     Y_forward = repeat(data, 1, 1, 1, n_samples) 
     _, Zy_fixed_train, _ = network.forward(ZX_noise, Y_forward) #needed to set the proper transforms on inverse
-    post_samples =  network.inverse(ZX_noise, Zy_fixed_train)
+    post_samples = network.inverse(ZX_noise, Zy_fixed_train)
     return reshape(post_samples, (n_parms,n_samples)) |> transpose
 end
