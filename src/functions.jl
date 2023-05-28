@@ -18,6 +18,7 @@ function train!(network::NetworkConditionalGlow, x_train, y_train;
     # Training logs 
     loss_l2 = fill(0.0, n_iter)
     logdet_train = fill(0.0, n_iter)
+    losses = fill(0.0, n_iter)
     for e ∈ 1:n_epochs 
         for b ∈ 1:n_batches 
             idx_e = (batch_size * (b - 1) + 1):(batch_size * b)
@@ -30,7 +31,7 @@ function train!(network::NetworkConditionalGlow, x_train, y_train;
             # Loss function is l2 norm - logdet
             loss_l2[iter] = norm(Zx)^2 / prod(size(X))  # normalize by image size and batch size
             logdet_train[iter] = -lgdet / prod(size(X)[1:end-1]) # logdet is already normalized by batch size
-
+            losses[iter] = loss_l2[iter] + logdet_train[iter]
             # Set gradients of flow
             network.backward(Zx / batch_size, Zx, Zy)
 
@@ -43,15 +44,16 @@ function train!(network::NetworkConditionalGlow, x_train, y_train;
             showvalues = [
                 (:epoch, "$e/$n_epochs"),
                 (:batch, "$b/$n_batches"),
-                (:f_l2, round(loss_l2[iter],digits=3)),
-                (:lgdet, round(logdet_train[iter],digits=3)),
-                (:loss, round(loss_l2[iter] + logdet_train[iter],digits=3))]
+                (:f_l2, round(loss_l2[iter], digits=3)),
+                (:lgdet, round(logdet_train[iter], digits=3)),
+                (:max_loss, round(maximum(losses[1:iter]), digits=3)),
+                (:loss, round(losses[iter],digits=3))]
 
             show_progress ? next!(progress; showvalues) : nothing
             iter += 1
         end
     end
-    return loss_l2 + logdet_train
+    return losses
 end
 
 function sample_posterior(network, data::AbstractArray{T,1}; kwargs...) where {T}
