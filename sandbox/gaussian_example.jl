@@ -28,7 +28,7 @@ function sample_prior()
 end
 
 n_parms = 2 
-n_train = 10000
+n_train = 10_000
 x_train = mapreduce(x -> sample_prior(), hcat, 1:n_train)
 y_train = mapreduce(i -> rand(Normal(x_train[:,i]...), n_obs), hcat, 1:n_train)
 ##############################################################################################################

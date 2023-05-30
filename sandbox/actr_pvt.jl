@@ -11,12 +11,12 @@ using Distributions
 using ACTRPVT
 using Random
 using PyPlot
-Random.seed!(6587)
+Random.seed!(02102)
 ##############################################################################################################
 #                                           generate data
 ##############################################################################################################
 n_obs = 100
-parms = (υ=4.2, τ=3.8, λ=.98, γ=.05)
+parms = (υ=4.0, τ=3.0, λ=.98, γ=.04)
 _,rts = rand(PVTModel(;parms...), n_obs)
 ##############################################################################################################
 #                                           generate training data
@@ -46,7 +46,7 @@ x_prior = mapreduce(x -> sample_prior(), hcat, 1:n_samples)'
 ##############################################################################################################
 #                                           train neural network
 ##############################################################################################################
-n_epochs = 20
+n_epochs = 30
 batch_size = 1000
 n_batches = div(n_train, batch_size)
 n_hidden = 32
@@ -98,3 +98,11 @@ legend()
 
 tight_layout()
 fig
+
+
+n_obs = 100
+parms = (υ=5.0, τ=3.0, λ=.98, γ=.04)
+_,rts = rand(PVTModel(;parms...), n_obs)
+x_post = sample_posterior(network, rts; n_parms, n_samples)
+println(round.(mean(x_post, dims=1), digits=3))
+parms
