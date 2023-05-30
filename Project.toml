@@ -4,7 +4,6 @@ authors = ["itsdfish and contributors"]
 version = "1.0.0-DEV"
 
 [deps]
-ACTRPVT = "27403de4-b1c2-4c44-95d8-36d2b6bff33e"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 Flux = "587475ba-b771-5e3f-ad9e-33799f191a9c"
 InvertibleNetworks = "b7115f24-5f92-4794-81e8-23b0ddb121d3"
