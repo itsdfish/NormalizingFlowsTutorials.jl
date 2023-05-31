@@ -21,9 +21,9 @@ function train!(network::NetworkConditionalGlow, x_train, y_train;
     losses = fill(0.0, n_iter)
     for e ∈ 1:n_epochs 
         for b ∈ 1:n_batches 
-            idx_e = (batch_size * (b - 1) + 1):(batch_size * b)
-            X = x_train[:, :, :, idx_e]
-            Y = y_train[:, :, :, idx_e]
+            batch_idx = (batch_size * (b - 1) + 1):(batch_size * b)
+            X = get_batch(x_train, batch_idx)
+            Y = get_batch(y_train, batch_idx)
 
             # Forward pass of normalizing flow
             Zx, Zy, lgdet = network.forward(X, Y)
@@ -60,6 +60,8 @@ function sample_posterior(network, data::AbstractArray{T,1}; kwargs...) where {T
     data = reshape(data, (1,1,length(data),:))
     return sample_posterior(network, data; kwargs...)
 end
+
+get_batch(x:: AbstractArray{T, N}, slice) where{T,N} = selectdim(x, N, slice)
 
 function sample_posterior(network, data; n_parms, n_samples)
     ZX_noise = randn(1, 1, n_parms, n_samples) 

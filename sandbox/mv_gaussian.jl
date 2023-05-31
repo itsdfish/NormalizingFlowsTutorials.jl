@@ -43,9 +43,9 @@ y_train = zeros(n_obs, n_dim, n_train)
 for i ∈ 1:n_train
     y_train[:,:,i] = rand(MvNormal(x_train[1:2,i],x_train[3,i] * I(2)), n_obs)'
 end
-
-# hack to make even number of parameters. 
 x_train = [x_train[1,:]'; x_train]
+x_train = reshape(x_train, (1,4,n_train))
+# hack to make even number of parameters. 
 ##############################################################################################################
 #                                          sample prior distribution
 ##############################################################################################################
